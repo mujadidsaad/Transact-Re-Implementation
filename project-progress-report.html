@@ -1,0 +1,2560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Progress Report | Command Center</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0052CC;
+            --primary-hover: #0747A6;
+            --primary-light: #DEEBFF;
+            --success: #36B37E;
+            --success-light: #E3FCEF;
+            --warning: #FFAB00;
+            --warning-light: #FFFAE6;
+            --danger: #DE350B;
+            --danger-light: #FFEBE6;
+            --purple: #6554C0;
+            --purple-light: #EAE6FF;
+            --teal: #00B8D9;
+            --teal-light: #E6FCFF;
+            
+            --bg-page: #F4F5F7;
+            --bg-card: #FFFFFF;
+            --bg-hover: #F4F5F7;
+            --bg-selected: #E9F2FF;
+            
+            --text-primary: #172B4D;
+            --text-secondary: #5E6C84;
+            --text-subtle: #7A869A;
+            --text-inverse: #FFFFFF;
+            
+            --border: #DFE1E6;
+            --border-focus: #4C9AFF;
+            
+            --shadow-sm: 0 1px 2px rgba(9, 30, 66, 0.08);
+            --shadow-md: 0 4px 8px rgba(9, 30, 66, 0.08), 0 0 1px rgba(9, 30, 66, 0.08);
+            --shadow-lg: 0 8px 16px rgba(9, 30, 66, 0.12), 0 0 1px rgba(9, 30, 66, 0.08);
+            
+            --radius-sm: 3px;
+            --radius-md: 6px;
+            --radius-lg: 8px;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-page);
+            color: var(--text-primary);
+            min-height: 100vh;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* Layout */
+        .app-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 240px;
+            background: var(--bg-card);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--primary), var(--purple));
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .logo-text {
+            font-weight: 700;
+            font-size: 15px;
+            color: var(--text-primary);
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 12px 0;
+            overflow-y: auto;
+        }
+
+        .nav-section {
+            margin-bottom: 8px;
+        }
+
+        .nav-section-title {
+            padding: 8px 20px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-subtle);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 20px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background: var(--bg-selected);
+            color: var(--primary);
+            border-left-color: var(--primary);
+            font-weight: 500;
+        }
+
+        .nav-item-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .nav-item-badge {
+            margin-left: auto;
+            background: var(--bg-hover);
+            color: var(--text-subtle);
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        .nav-item.active .nav-item-badge {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 240px;
+            min-height: 100vh;
+        }
+
+        /* Top Header */
+        .top-header {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .page-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-subtle);
+        }
+
+        .breadcrumb a {
+            color: var(--text-secondary);
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            color: var(--primary);
+            text-decoration: underline;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-input {
+            background: var(--bg-page);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 8px 12px;
+            font-size: 13px;
+            color: var(--text-primary);
+            width: 160px;
+            transition: all 0.15s ease;
+        }
+
+        .header-input:focus {
+            outline: none;
+            border-color: var(--border-focus);
+            background: var(--bg-card);
+            box-shadow: 0 0 0 2px rgba(76, 154, 255, 0.2);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            border: none;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background: var(--bg-page);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-hover);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #2E9E6E;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #BF2600;
+        }
+
+        .btn-icon {
+            padding: 8px;
+        }
+
+        /* Content Area */
+        .content-area {
+            padding: 24px 32px;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 1200px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .sidebar { display: none; }
+            .main-content { margin-left: 0; }
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .stat-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .stat-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .stat-card-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-subtle);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-card-badge {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 3px;
+        }
+
+        .badge-blue { background: var(--primary-light); color: var(--primary); }
+        .badge-purple { background: var(--purple-light); color: var(--purple); }
+        .badge-green { background: var(--success-light); color: var(--success); }
+        .badge-yellow { background: var(--warning-light); color: #974F0C; }
+        .badge-red { background: var(--danger-light); color: var(--danger); }
+        .badge-teal { background: var(--teal-light); color: #008DA6; }
+
+        .stat-card-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .stat-card-progress {
+            height: 6px;
+            background: var(--bg-page);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        .stat-card-progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        .stat-card.integration .stat-card-progress-fill { background: var(--primary); }
+        .stat-card.migration .stat-card-progress-fill { background: var(--purple); }
+        .stat-card.testing .stat-card-progress-fill { background: var(--success); }
+        .stat-card.configuration .stat-card-progress-fill { background: var(--warning); }
+
+        .stat-card-footer {
+            display: flex;
+            gap: 16px;
+        }
+
+        .stat-card-metric {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-card-metric-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .stat-card-metric-label {
+            font-size: 11px;
+            color: var(--text-subtle);
+        }
+
+        /* Panel Card */
+        .panel-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .panel-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .panel-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .panel-body {
+            padding: 0;
+        }
+
+        /* Data Table */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            background: var(--bg-page);
+            padding: 10px 16px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-subtle);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+        }
+
+        .data-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        .data-table tbody tr:hover {
+            background: var(--bg-hover);
+        }
+
+        .data-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Table Inputs */
+        .table-input {
+            width: 100%;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 6px 10px;
+            font-size: 13px;
+            color: var(--text-primary);
+            transition: all 0.15s ease;
+        }
+
+        .table-input:focus {
+            outline: none;
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 2px rgba(76, 154, 255, 0.2);
+        }
+
+        .table-input::placeholder {
+            color: var(--text-subtle);
+        }
+
+        select.table-input {
+            cursor: pointer;
+        }
+
+        /* Task Key */
+        .task-key {
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 12px;
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        /* Status Lozenge */
+        .status-lozenge {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .status-todo { background: var(--bg-page); color: var(--text-subtle); }
+        .status-inprogress { background: var(--primary-light); color: var(--primary); }
+        .status-done { background: var(--success-light); color: var(--success); }
+        .status-onhold { background: var(--warning-light); color: #974F0C; }
+        .status-blocked { background: var(--danger-light); color: var(--danger); }
+
+        /* Priority */
+        .priority-icon {
+            width: 16px;
+            height: 16px;
+            border-radius: 2px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .priority-low { background: var(--success); }
+        .priority-medium { background: var(--warning); }
+        .priority-high { background: #FF5630; }
+        .priority-critical { background: var(--danger); }
+
+        /* Action Buttons */
+        .action-btn {
+            width: 28px;
+            height: 28px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-sm);
+            border: none;
+            background: transparent;
+            color: var(--text-subtle);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .action-btn:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .action-btn.delete:hover {
+            background: var(--danger-light);
+            color: var(--danger);
+        }
+
+        /* Footer */
+        .footer-actions {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            padding: 24px;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(9, 30, 66, 0.54);
+            z-index: 1000;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 48px 24px;
+            overflow-y: auto;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-container {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            max-width: 900px;
+            width: 100%;
+            box-shadow: var(--shadow-lg);
+            animation: modalSlide 0.2s ease;
+        }
+
+        @keyframes modalSlide {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-sm);
+            border: none;
+            background: transparent;
+            color: var(--text-subtle);
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.15s ease;
+        }
+
+        .modal-close:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 24px;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            padding: 16px 24px;
+            border-top: 1px solid var(--border);
+            background: var(--bg-page);
+        }
+
+        /* Report Sections */
+        .report-section {
+            margin-bottom: 24px;
+        }
+
+        .report-section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .report-info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            background: var(--bg-page);
+            padding: 16px;
+            border-radius: var(--radius-md);
+        }
+
+        .report-info-item {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .report-info-label {
+            color: var(--text-subtle);
+        }
+
+        .report-info-value {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .report-metrics {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+        }
+
+        .report-metric {
+            background: var(--bg-page);
+            padding: 16px;
+            border-radius: var(--radius-md);
+            text-align: center;
+        }
+
+        .report-metric-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .report-metric-label {
+            font-size: 11px;
+            color: var(--text-subtle);
+            text-transform: uppercase;
+        }
+
+        .report-metric.highlight {
+            background: var(--primary);
+        }
+
+        .report-metric.highlight .report-metric-value,
+        .report-metric.highlight .report-metric-label {
+            color: white;
+        }
+
+        .report-stream-row {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: var(--bg-page);
+            border-radius: var(--radius-md);
+            margin-bottom: 8px;
+            gap: 24px;
+        }
+
+        .report-stream-name {
+            width: 140px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .report-stream-stats {
+            display: flex;
+            gap: 24px;
+            flex: 1;
+        }
+
+        .report-stream-stat {
+            text-align: center;
+        }
+
+        .report-stream-stat-value {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .report-stream-stat-label {
+            font-size: 10px;
+            color: var(--text-subtle);
+            text-transform: uppercase;
+        }
+
+        .recommendation-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .recommendation-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 16px;
+            background: var(--bg-page);
+            border-radius: var(--radius-md);
+            border-left: 3px solid var(--primary);
+        }
+
+        .recommendation-item.warning {
+            border-left-color: var(--warning);
+        }
+
+        .recommendation-item.danger {
+            border-left-color: var(--danger);
+        }
+
+        .recommendation-item.success {
+            border-left-color: var(--success);
+        }
+
+        .recommendation-icon {
+            font-size: 16px;
+        }
+
+        .recommendation-text {
+            font-size: 13px;
+            color: var(--text-primary);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 48px 24px;
+            color: var(--text-subtle);
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        /* Print */
+        @media print {
+            .sidebar, .top-header, .btn, .modal-close, .no-print {
+                display: none !important;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .modal-overlay {
+                position: static;
+                background: none;
+                padding: 0;
+            }
+
+            .modal-container {
+                box-shadow: none;
+            }
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Report Table */
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+
+        .report-table th {
+            background: var(--bg-page);
+            padding: 8px 10px;
+            text-align: left;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-subtle);
+            text-transform: uppercase;
+            border: 1px solid var(--border);
+        }
+
+        .report-table td {
+            padding: 8px 10px;
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+        }
+
+        .report-table tbody tr:nth-child(even) {
+            background: var(--bg-page);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <div class="logo-icon">P</div>
+                    <span class="logo-text">Project Tracker</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Streams</div>
+                    <div class="nav-item active" data-tab="integration">
+                        <span>Integration</span>
+                        <span class="nav-item-badge" id="nav-integration-count">0</span>
+                    </div>
+                    <div class="nav-item" data-tab="migration">
+                        <span>Data Migration</span>
+                        <span class="nav-item-badge" id="nav-migration-count">0</span>
+                    </div>
+                    <div class="nav-item" data-tab="testing">
+                        <span>Testing</span>
+                        <span class="nav-item-badge" id="nav-testing-count">0</span>
+                    </div>
+                    <div class="nav-item" data-tab="configuration">
+                        <span>Configuration</span>
+                        <span class="nav-item-badge" id="nav-config-count">0</span>
+                    </div>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Tracking</div>
+                    <div class="nav-item" data-tab="issues">
+                        <span>Issues & Risks</span>
+                        <span class="nav-item-badge" id="nav-issues-count">0</span>
+                    </div>
+                    <div class="nav-item" data-tab="dependencies">
+                        <span>Dependencies</span>
+                        <span class="nav-item-badge" id="nav-deps-count">0</span>
+                    </div>
+                    <div class="nav-item" data-tab="milestones">
+                        <span>Milestones</span>
+                        <span class="nav-item-badge" id="nav-milestones-count">0</span>
+                    </div>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <h1 class="page-title">Project Progress Report</h1>
+                </div>
+                <div class="header-right">
+                    <input type="text" class="header-input" id="projectName" placeholder="Project Name" value="Transact-Re-Implementation">
+                    <input type="date" class="header-input" id="reportDate">
+                    <input type="text" class="header-input" id="reportingPeriod" placeholder="Sprint/Week">
+                    <button class="btn btn-primary" onclick="generateReport()">
+                        Generate Report
+                    </button>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Stats Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card integration" onclick="switchTab('integration')">
+                        <div class="stat-card-header">
+                            <span class="stat-card-title">Integration</span>
+                            <span class="stat-card-badge badge-blue" id="integration-badge">To Do</span>
+                        </div>
+                        <div class="stat-card-value" id="integration-progress">0%</div>
+                        <div class="stat-card-progress">
+                            <div class="stat-card-progress-fill" id="integration-bar" style="width: 0%"></div>
+                        </div>
+                        <div class="stat-card-footer">
+                            <div class="stat-card-metric">
+                                <span class="stat-card-metric-value" id="integration-tasks">0</span>
+                                <span class="stat-card-metric-label">Tasks</span>
+                            </div>
+                            <div class="stat-card-metric">
+                                <span class="stat-card-metric-value" id="integration-completed">0</span>
+                                <span class="stat-card-metric-label">Done</span>
+                            </div>
+                            <div class="stat-card-metric">
+                                <span class="stat-card-metric-value" id="integration-blocked">0</span>
+                                <span class="stat-card-metric-label">Blocked</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card migration" onclick="switchTab('migration')">
+                        <div class="stat-card-header">
+                            <span class="stat-card-title">Data Migration</span>
+                            <span class="stat-card-badge badge-purple" id="migration-badge">To Do</span>
+                        </div>
+                        <div class="stat-card-value" id="migration-progress">0%</div>
+                        <div class="stat-card-progress">
+                            <div class="stat-card-progress-fill" id="migration-bar" style="width: 0%"></div>
+                        </div>
+                        <div class="stat-card-footer">
+                            <div class="stat-card-metric">
+                                <span class="stat-card-metric-value" id="migration-tasks">0</span>
+                                <span class="stat-card-metric-label">Tasks</span>
+                            </div>
+                            <div class="stat-card-metric">
+                                <span class="stat-card-metric-value" id="migration-completed">0</span>
+                                <span class="stat-card-metric-label">Done</span>
+                            </div>
+                            <div class="stat-card-metric">
+                                <span class="stat-card-metric-value" id="migration-blocked">0</span>
+                                <span class="stat-card-metric-label">Blocked</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card testing" onclick="switchTab('testing')">
+                        <div class="stat-card-header">
+                            <span class="stat-card-title">Testing</span>
+                            <span class="stat-card-badge badge-green" id="testing-badge">To Do</span>
+                        </div>
+                        <div class="stat-card-value" id="testing-progress">0%</div>
+                        <div class="stat-card-progress">
+                            <div class="stat-card-progress-fill" id="testing-bar" style="width: 0%"></div>
+                        </div>
+                        <div class="stat-card-footer">
+                            <div class="stat-card-metric">
+                                <span class="stat-card-metric-value" id="testing-tasks">0</span>
+                                <span class="stat-card-metric-label">Tests</span>
+                            </div>
+                            <div class="stat-card-metric">
+                                <span class="stat-card-metric-value" id="testing-passed">0</span>
+                                <span class="stat-card-metric-label">Passed</span>
+                            </div>
+                            <div class="stat-card-metric">
+                                <span class="stat-card-metric-value" id="testing-failed">0</span>
+                                <span class="stat-card-metric-label">Failed</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card configuration" onclick="switchTab('configuration')">
+                        <div class="stat-card-header">
+                            <span class="stat-card-title">Configuration</span>
+                            <span class="stat-card-badge badge-yellow" id="config-badge">To Do</span>
+                        </div>
+                        <div class="stat-card-value" id="config-progress">0%</div>
+                        <div class="stat-card-progress">
+                            <div class="stat-card-progress-fill" id="config-bar" style="width: 0%"></div>
+                        </div>
+                        <div class="stat-card-footer">
+                            <div class="stat-card-metric">
+                                <span class="stat-card-metric-value" id="config-tasks">0</span>
+                                <span class="stat-card-metric-label">Items</span>
+                            </div>
+                            <div class="stat-card-metric">
+                                <span class="stat-card-metric-value" id="config-completed">0</span>
+                                <span class="stat-card-metric-label">Done</span>
+                            </div>
+                            <div class="stat-card-metric">
+                                <span class="stat-card-metric-value" id="config-blocked">0</span>
+                                <span class="stat-card-metric-label">Blocked</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Integration Panel -->
+                <div class="tab-content active" id="integration-content">
+                    <div class="panel-card">
+                        <div class="panel-header">
+                            <h2 class="panel-title">Integration Tasks</h2>
+                            <div class="panel-actions">
+                                <button class="btn btn-success" onclick="addTask('integration')">+ Create Task</button>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Key</th>
+                                        <th>Summary</th>
+                                        <th>Assignee</th>
+                                        <th>Start</th>
+                                        <th>Due</th>
+                                        <th>Status</th>
+                                        <th>Progress</th>
+                                        <th>Notes</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="integration-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Migration Panel -->
+                <div class="tab-content" id="migration-content">
+                    <div class="panel-card">
+                        <div class="panel-header">
+                            <h2 class="panel-title">Data Migration Tasks</h2>
+                            <div class="panel-actions">
+                                <button class="btn btn-success" onclick="addTask('migration')">+ Create Task</button>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Key</th>
+                                        <th>Summary</th>
+                                        <th>Source</th>
+                                        <th>Assignee</th>
+                                        <th>Start</th>
+                                        <th>Due</th>
+                                        <th>Status</th>
+                                        <th>Records</th>
+                                        <th>Progress</th>
+                                        <th>Notes</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="migration-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Testing Panel -->
+                <div class="tab-content" id="testing-content">
+                    <div class="panel-card">
+                        <div class="panel-header">
+                            <h2 class="panel-title">Testing Activities</h2>
+                            <div class="panel-actions">
+                                <button class="btn btn-success" onclick="addTask('testing')">+ Create Test</button>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Key</th>
+                                        <th>Summary</th>
+                                        <th>Type</th>
+                                        <th>Assignee</th>
+                                        <th>Start</th>
+                                        <th>Due</th>
+                                        <th>Status</th>
+                                        <th>Total</th>
+                                        <th>Pass</th>
+                                        <th>Fail</th>
+                                        <th>Progress</th>
+                                        <th>Notes</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="testing-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Configuration Panel -->
+                <div class="tab-content" id="configuration-content">
+                    <div class="panel-card">
+                        <div class="panel-header">
+                            <h2 class="panel-title">Configuration Items</h2>
+                            <div class="panel-actions">
+                                <button class="btn btn-success" onclick="addTask('configuration')">+ Create Item</button>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Key</th>
+                                        <th>Summary</th>
+                                        <th>Module</th>
+                                        <th>Assignee</th>
+                                        <th>Start</th>
+                                        <th>Due</th>
+                                        <th>Status</th>
+                                        <th>Progress</th>
+                                        <th>Notes</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="configuration-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Issues Panel -->
+                <div class="tab-content" id="issues-content">
+                    <div class="panel-card">
+                        <div class="panel-header">
+                            <h2 class="panel-title">Issues & Risks Register</h2>
+                            <div class="panel-actions">
+                                <button class="btn btn-success" onclick="addTask('issues')">+ Create Entry</button>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Key</th>
+                                        <th>Type</th>
+                                        <th>Summary</th>
+                                        <th>Description</th>
+                                        <th>Stream</th>
+                                        <th>Priority</th>
+                                        <th>Impact</th>
+                                        <th>Assignee</th>
+                                        <th>Status</th>
+                                        <th>Mitigation</th>
+                                        <th>Due</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="issues-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dependencies Panel -->
+                <div class="tab-content" id="dependencies-content">
+                    <div class="panel-card">
+                        <div class="panel-header">
+                            <h2 class="panel-title">Dependencies Tracker</h2>
+                            <div class="panel-actions">
+                                <button class="btn btn-success" onclick="addTask('dependencies')">+ Create Dependency</button>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Key</th>
+                                        <th>Summary</th>
+                                        <th>Type</th>
+                                        <th>From</th>
+                                        <th>To</th>
+                                        <th>Description</th>
+                                        <th>Assignee</th>
+                                        <th>Required By</th>
+                                        <th>Status</th>
+                                        <th>Impact</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dependencies-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Milestones Panel -->
+                <div class="tab-content" id="milestones-content">
+                    <div class="panel-card">
+                        <div class="panel-header">
+                            <h2 class="panel-title">Project Milestones</h2>
+                            <div class="panel-actions">
+                                <button class="btn btn-success" onclick="addTask('milestones')">+ Create Milestone</button>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Key</th>
+                                        <th>Summary</th>
+                                        <th>Stream</th>
+                                        <th>Planned</th>
+                                        <th>Actual</th>
+                                        <th>Status</th>
+                                        <th>Assignee</th>
+                                        <th>Deliverables</th>
+                                        <th>Notes</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="milestones-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Actions -->
+                <div class="footer-actions">
+                    <button class="btn btn-primary" onclick="generateReport()">Generate Report</button>
+                    <button class="btn btn-secondary" onclick="exportData()">Export CSV</button>
+                    <button class="btn btn-danger" onclick="clearProject()">Clear All</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Report Modal -->
+    <div class="modal-overlay" id="reportModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2 class="modal-title">Project Status Report</h2>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body" id="reportBody"></div>
+            <div class="modal-footer no-print">
+                <button class="btn btn-secondary" onclick="closeModal()">Close</button>
+                <button class="btn btn-secondary" onclick="printReport()">Print</button>
+                <button class="btn btn-primary" onclick="saveAsPDF()">Save as PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check for reset parameter immediately
+        (function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('reset') === 'true') {
+                localStorage.removeItem('projectData');
+                window.location.replace(window.location.pathname);
+                throw new Error('Redirecting...');
+            }
+        })();
+
+        // Initialize
+        document.getElementById('reportDate').valueAsDate = new Date();
+
+        // Counters
+        const counters = { integration: 1, migration: 1, testing: 1, configuration: 1, issues: 1, dependencies: 1, milestones: 1 };
+
+        // Navigation
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const tab = item.dataset.tab;
+                switchTab(tab);
+            });
+        });
+
+        function switchTab(tab) {
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+            document.getElementById(tab + '-content').classList.add('active');
+        }
+
+        // Options
+        const statusOpts = ['To Do', 'In Progress', 'Done', 'On Hold', 'Blocked'];
+        const priorityOpts = ['Low', 'Medium', 'High', 'Critical'];
+        const streamOpts = ['Integration', 'Data Migration', 'Testing', 'Configuration', 'All'];
+        const testTypeOpts = ['Unit', 'Integration', 'System', 'UAT', 'Performance', 'Security'];
+        const issueTypeOpts = ['Issue', 'Risk'];
+        const depTypeOpts = ['Internal', 'External', 'Technical', 'Resource'];
+
+        function createSelect(opts, isStatus = false) {
+            const handler = isStatus ? 'onchange="handleStatusChange(this); refreshStats(); autoSave();"' : 'onchange="refreshStats(); autoSave();"';
+            return `<select class="table-input" ${handler}>${opts.map(o => `<option value="${o}">${o}</option>`).join('')}</select>`;
+        }
+
+        function createStatusSelect() {
+            return createSelect(statusOpts, true);
+        }
+
+        // Handle status change - auto-set progress to 100% when Done
+        function handleStatusChange(select) {
+            if (select.value === 'Done') {
+                const row = select.closest('tr');
+                const progressInput = row.querySelector('input[type="number"][max="100"]');
+                if (progressInput) {
+                    progressInput.value = 100;
+                }
+            }
+        }
+
+        // Validate due date is after start date
+        function validateDates(input) {
+            const row = input.closest('tr');
+            const dateInputs = row.querySelectorAll('input[type="date"]');
+            if (dateInputs.length >= 2) {
+                const startDate = dateInputs[0].value;
+                const dueDate = dateInputs[1].value;
+                if (startDate && dueDate && dueDate < startDate) {
+                    alert('Due date must be after start date');
+                    dateInputs[1].value = startDate;
+                }
+            }
+            autoSave();
+        }
+
+        // Auto-save function
+        function autoSave() {
+            localStorage.setItem('projectData', JSON.stringify(collectData()));
+        }
+
+        // Add auto-save to all inputs
+        document.addEventListener('input', function(e) {
+            if (e.target.classList.contains('table-input') || e.target.classList.contains('header-input')) {
+                autoSave();
+            }
+        });
+
+        // Add Task
+        function addTask(type) {
+            const tbody = document.getElementById(type + '-tbody');
+            const id = counters[type]++;
+            const prefix = { integration: 'INT', migration: 'MIG', testing: 'TST', configuration: 'CFG', issues: 'IR', dependencies: 'DEP', milestones: 'MS' }[type];
+            
+            let row = '';
+            switch(type) {
+                case 'integration':
+                    row = `<tr data-id="${id}">
+                        <td><span class="task-key">${prefix}-${id}</span></td>
+                        <td><input type="text" class="table-input" placeholder="Task summary" onchange="refreshStats()"></td>
+                        <td><input type="text" class="table-input" placeholder="Assignee"></td>
+                        <td><input type="date" class="table-input" onchange="validateDates(this)"></td>
+                        <td><input type="date" class="table-input" onchange="validateDates(this)"></td>
+                        <td>${createStatusSelect()}</td>
+                        <td><input type="number" class="table-input" min="0" max="100" value="0" style="width:60px" onchange="refreshStats()"></td>
+                        <td><input type="text" class="table-input" placeholder="Notes"></td>
+                        <td><button class="action-btn delete" onclick="deleteRow(this)">×</button></td>
+                    </tr>`;
+                    break;
+                case 'migration':
+                    row = `<tr data-id="${id}">
+                        <td><span class="task-key">${prefix}-${id}</span></td>
+                        <td><input type="text" class="table-input" placeholder="Task summary" onchange="refreshStats()"></td>
+                        <td><input type="text" class="table-input" placeholder="Source"></td>
+                        <td><input type="text" class="table-input" placeholder="Assignee"></td>
+                        <td><input type="date" class="table-input" onchange="validateDates(this)"></td>
+                        <td><input type="date" class="table-input" onchange="validateDates(this)"></td>
+                        <td>${createStatusSelect()}</td>
+                        <td><input type="number" class="table-input" placeholder="Count" style="width:70px"></td>
+                        <td><input type="number" class="table-input" min="0" max="100" value="0" style="width:60px" onchange="refreshStats()"></td>
+                        <td><input type="text" class="table-input" placeholder="Notes"></td>
+                        <td><button class="action-btn delete" onclick="deleteRow(this)">×</button></td>
+                    </tr>`;
+                    break;
+                case 'testing':
+                    row = `<tr data-id="${id}">
+                        <td><span class="task-key">${prefix}-${id}</span></td>
+                        <td><input type="text" class="table-input" placeholder="Test summary" onchange="refreshStats()"></td>
+                        <td>${createSelect(testTypeOpts)}</td>
+                        <td><input type="text" class="table-input" placeholder="Assignee"></td>
+                        <td><input type="date" class="table-input" onchange="validateDates(this)"></td>
+                        <td><input type="date" class="table-input" onchange="validateDates(this)"></td>
+                        <td>${createStatusSelect()}</td>
+                        <td><input type="number" class="table-input" min="0" value="0" style="width:50px" onchange="calcTest(this)"></td>
+                        <td><input type="number" class="table-input" min="0" value="0" style="width:50px" onchange="calcTest(this)"></td>
+                        <td><input type="number" class="table-input" min="0" value="0" style="width:50px" onchange="calcTest(this)"></td>
+                        <td><input type="number" class="table-input" min="0" max="100" value="0" style="width:60px" onchange="refreshStats()"></td>
+                        <td><input type="text" class="table-input" placeholder="Notes"></td>
+                        <td><button class="action-btn delete" onclick="deleteRow(this)">×</button></td>
+                    </tr>`;
+                    break;
+                case 'configuration':
+                    row = `<tr data-id="${id}">
+                        <td><span class="task-key">${prefix}-${id}</span></td>
+                        <td><input type="text" class="table-input" placeholder="Config item" onchange="refreshStats()"></td>
+                        <td><input type="text" class="table-input" placeholder="Module"></td>
+                        <td><input type="text" class="table-input" placeholder="Assignee"></td>
+                        <td><input type="date" class="table-input" onchange="validateDates(this)"></td>
+                        <td><input type="date" class="table-input" onchange="validateDates(this)"></td>
+                        <td>${createStatusSelect()}</td>
+                        <td><input type="number" class="table-input" min="0" max="100" value="0" style="width:60px" onchange="refreshStats()"></td>
+                        <td><input type="text" class="table-input" placeholder="Notes"></td>
+                        <td><button class="action-btn delete" onclick="deleteRow(this)">×</button></td>
+                    </tr>`;
+                    break;
+                case 'issues':
+                    row = `<tr data-id="${id}">
+                        <td><span class="task-key">${prefix}-${id}</span></td>
+                        <td>${createSelect(issueTypeOpts)}</td>
+                        <td><input type="text" class="table-input" placeholder="Summary"></td>
+                        <td><input type="text" class="table-input" placeholder="Description"></td>
+                        <td>${createSelect(streamOpts)}</td>
+                        <td>${createSelect(priorityOpts)}</td>
+                        <td>${createSelect(priorityOpts)}</td>
+                        <td><input type="text" class="table-input" placeholder="Assignee"></td>
+                        <td>${createSelect(statusOpts)}</td>
+                        <td><input type="text" class="table-input" placeholder="Mitigation"></td>
+                        <td><input type="date" class="table-input"></td>
+                        <td><button class="action-btn delete" onclick="deleteRow(this)">×</button></td>
+                    </tr>`;
+                    break;
+                case 'dependencies':
+                    row = `<tr data-id="${id}">
+                        <td><span class="task-key">${prefix}-${id}</span></td>
+                        <td><input type="text" class="table-input" placeholder="Summary"></td>
+                        <td>${createSelect(depTypeOpts)}</td>
+                        <td>${createSelect(streamOpts)}</td>
+                        <td>${createSelect(streamOpts)}</td>
+                        <td><input type="text" class="table-input" placeholder="Description"></td>
+                        <td><input type="text" class="table-input" placeholder="Assignee"></td>
+                        <td><input type="date" class="table-input"></td>
+                        <td>${createSelect(statusOpts)}</td>
+                        <td>${createSelect(priorityOpts)}</td>
+                        <td><button class="action-btn delete" onclick="deleteRow(this)">×</button></td>
+                    </tr>`;
+                    break;
+                case 'milestones':
+                    row = `<tr data-id="${id}">
+                        <td><span class="task-key">${prefix}-${id}</span></td>
+                        <td><input type="text" class="table-input" placeholder="Milestone"></td>
+                        <td>${createSelect(streamOpts)}</td>
+                        <td><input type="date" class="table-input"></td>
+                        <td><input type="date" class="table-input"></td>
+                        <td>${createSelect(statusOpts)}</td>
+                        <td><input type="text" class="table-input" placeholder="Assignee"></td>
+                        <td><input type="text" class="table-input" placeholder="Deliverables"></td>
+                        <td><input type="text" class="table-input" placeholder="Notes"></td>
+                        <td><button class="action-btn delete" onclick="deleteRow(this)">×</button></td>
+                    </tr>`;
+                    break;
+            }
+            tbody.insertAdjacentHTML('beforeend', row);
+            refreshStats();
+        }
+
+        function deleteRow(btn) {
+            if (confirm('Delete this item?')) {
+                btn.closest('tr').remove();
+                refreshStats();
+            }
+        }
+
+        function calcTest(input) {
+            const row = input.closest('tr');
+            const nums = row.querySelectorAll('input[type="number"]');
+            const total = parseInt(nums[0].value) || 0;
+            const passed = parseInt(nums[1].value) || 0;
+            if (total > 0) nums[3].value = Math.round((passed / total) * 100);
+            refreshStats();
+        }
+
+        // Refresh Stats
+        function refreshStats() {
+            ['integration', 'migration', 'testing', 'configuration'].forEach(stream => {
+                const rows = document.querySelectorAll(`#${stream}-tbody tr`);
+                let totalProg = 0, completed = 0, blocked = 0, passed = 0, failed = 0;
+                
+                rows.forEach(row => {
+                    const nums = row.querySelectorAll('input[type="number"]');
+                    const sel = row.querySelector('select');
+                    const status = sel ? sel.value : '';
+                    
+                    let prog;
+                    if (stream === 'testing') {
+                        prog = nums[3];
+                        passed += parseInt(nums[1]?.value) || 0;
+                        failed += parseInt(nums[2]?.value) || 0;
+                    } else if (stream === 'migration') {
+                        prog = nums[1];
+                    } else {
+                        prog = nums[0];
+                    }
+                    
+                    totalProg += parseInt(prog?.value) || 0;
+                    if (status === 'Done') completed++;
+                    if (status === 'Blocked') blocked++;
+                });
+
+                const count = rows.length;
+                const avg = count > 0 ? Math.round(totalProg / count) : 0;
+                const prefix = stream === 'configuration' ? 'config' : stream;
+                
+                // Safely update elements with null checks
+                const progressEl = document.getElementById(`${prefix}-progress`);
+                const barEl = document.getElementById(`${prefix}-bar`);
+                const tasksEl = document.getElementById(`${prefix}-tasks`);
+                const completedEl = document.getElementById(`${prefix}-completed`);
+                const blockedEl = document.getElementById(`${prefix}-blocked`);
+                const badge = document.getElementById(`${prefix}-badge`);
+                const navCount = document.getElementById(`nav-${prefix}-count`);
+                
+                if (progressEl) progressEl.textContent = avg + '%';
+                if (barEl) barEl.style.width = avg + '%';
+                if (tasksEl) tasksEl.textContent = count;
+                if (completedEl) completedEl.textContent = completed;
+                
+                if (stream === 'testing') {
+                    const passedEl = document.getElementById('testing-passed');
+                    const failedEl = document.getElementById('testing-failed');
+                    if (passedEl) passedEl.textContent = passed;
+                    if (failedEl) failedEl.textContent = failed;
+                } else {
+                    if (blockedEl) blockedEl.textContent = blocked;
+                }
+
+                // Badge
+                if (badge) {
+                    if (blocked > 0) {
+                        badge.textContent = 'Blocked';
+                        badge.className = 'stat-card-badge badge-red';
+                    } else if (avg >= 100) {
+                        badge.textContent = 'Done';
+                        badge.className = 'stat-card-badge badge-green';
+                    } else if (avg > 0) {
+                        badge.textContent = 'In Progress';
+                        badge.className = 'stat-card-badge badge-blue';
+                    } else {
+                        badge.textContent = 'To Do';
+                        badge.className = 'stat-card-badge badge-' + (stream === 'integration' ? 'blue' : stream === 'migration' ? 'purple' : stream === 'testing' ? 'green' : 'yellow');
+                    }
+                }
+
+                // Nav count
+                if (navCount) navCount.textContent = count;
+            });
+
+            const issuesCount = document.getElementById('nav-issues-count');
+            const depsCount = document.getElementById('nav-deps-count');
+            const milestonesCount = document.getElementById('nav-milestones-count');
+            
+            if (issuesCount) issuesCount.textContent = document.querySelectorAll('#issues-tbody tr').length;
+            if (depsCount) depsCount.textContent = document.querySelectorAll('#dependencies-tbody tr').length;
+            if (milestonesCount) milestonesCount.textContent = document.querySelectorAll('#milestones-tbody tr').length;
+        }
+
+        // Data Collection
+        function collectData() {
+            const data = {
+                meta: {
+                    projectName: document.getElementById('projectName').value,
+                    reportDate: document.getElementById('reportDate').value,
+                    period: document.getElementById('reportingPeriod').value
+                },
+                streams: {}
+            };
+
+            ['integration', 'migration', 'testing', 'configuration', 'issues', 'dependencies', 'milestones'].forEach(type => {
+                const rows = document.querySelectorAll(`#${type}-tbody tr`);
+                data.streams[type] = [];
+                rows.forEach(row => {
+                    const rowData = { id: row.dataset.id };
+                    row.querySelectorAll('input, select').forEach((el, i) => {
+                        rowData['f' + i] = el.value;
+                    });
+                    data.streams[type].push(rowData);
+                });
+            });
+            return data;
+        }
+
+
+        function clearProject() {
+            if (!confirm('Clear all data?')) return;
+            ['integration', 'migration', 'testing', 'configuration', 'issues', 'dependencies', 'milestones'].forEach(type => {
+                document.getElementById(type + '-tbody').innerHTML = '';
+                counters[type] = 1;
+            });
+            localStorage.removeItem('projectData');
+            document.getElementById('projectName').value = '';
+            document.getElementById('reportingPeriod').value = '';
+            refreshStats();
+        }
+
+        function loadDemoData() {
+            if (!confirm('Load demo data? This will replace current data.')) return;
+            clearProjectSilent();
+            loadSyntheticData();
+        }
+
+        function clearProjectSilent() {
+            ['integration', 'migration', 'testing', 'configuration', 'issues', 'dependencies', 'milestones'].forEach(type => {
+                document.getElementById(type + '-tbody').innerHTML = '';
+                counters[type] = 1;
+            });
+            localStorage.removeItem('projectData');
+        }
+
+        function exportData() {
+            const data = collectData();
+            let csv = `Project: ${data.meta.projectName}\nDate: ${data.meta.reportDate}\n\n`;
+            Object.keys(data.streams).forEach(type => {
+                csv += `=== ${type.toUpperCase()} ===\n`;
+                data.streams[type].forEach(row => {
+                    csv += Object.values(row).join(',') + '\n';
+                });
+                csv += '\n';
+            });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `project_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+        }
+
+        // Generate task table HTML for report - reads directly from DOM
+        function generateTaskTable(type) {
+            const tbody = document.getElementById(`${type}-tbody`);
+            const rows = tbody.querySelectorAll('tr');
+            if (rows.length === 0) return '<p style="color:var(--text-subtle)">No tasks recorded.</p>';
+            
+            const prefix = { integration: 'INT', migration: 'MIG', testing: 'TST', configuration: 'CFG', issues: 'IR', dependencies: 'DEP', milestones: 'MS' }[type];
+            
+            let headers = '';
+            let bodyRows = '';
+            
+            switch(type) {
+                case 'integration':
+                    headers = '<tr><th>Key</th><th>Summary</th><th>Assignee</th><th>Start</th><th>Due</th><th>Status</th><th>Progress</th><th>Notes</th></tr>';
+                    rows.forEach((row, i) => {
+                        const inputs = row.querySelectorAll('input, select');
+                        bodyRows += `<tr><td>${prefix}-${i+1}</td><td>${inputs[0]?.value || ''}</td><td>${inputs[1]?.value || ''}</td><td>${inputs[2]?.value || ''}</td><td>${inputs[3]?.value || ''}</td><td>${inputs[4]?.value || ''}</td><td>${inputs[5]?.value || 0}%</td><td>${inputs[6]?.value || ''}</td></tr>`;
+                    });
+                    break;
+                case 'migration':
+                    headers = '<tr><th>Key</th><th>Summary</th><th>Source</th><th>Assignee</th><th>Start</th><th>Due</th><th>Status</th><th>Records</th><th>Progress</th><th>Notes</th></tr>';
+                    rows.forEach((row, i) => {
+                        const inputs = row.querySelectorAll('input, select');
+                        bodyRows += `<tr><td>${prefix}-${i+1}</td><td>${inputs[0]?.value || ''}</td><td>${inputs[1]?.value || ''}</td><td>${inputs[2]?.value || ''}</td><td>${inputs[3]?.value || ''}</td><td>${inputs[4]?.value || ''}</td><td>${inputs[5]?.value || ''}</td><td>${inputs[6]?.value || ''}</td><td>${inputs[7]?.value || 0}%</td><td>${inputs[8]?.value || ''}</td></tr>`;
+                    });
+                    break;
+                case 'testing':
+                    headers = '<tr><th>Key</th><th>Summary</th><th>Type</th><th>Assignee</th><th>Start</th><th>Due</th><th>Status</th><th>Total</th><th>Pass</th><th>Fail</th><th>Progress</th><th>Notes</th></tr>';
+                    rows.forEach((row, i) => {
+                        const inputs = row.querySelectorAll('input, select');
+                        bodyRows += `<tr><td>${prefix}-${i+1}</td><td>${inputs[0]?.value || ''}</td><td>${inputs[1]?.value || ''}</td><td>${inputs[2]?.value || ''}</td><td>${inputs[3]?.value || ''}</td><td>${inputs[4]?.value || ''}</td><td>${inputs[5]?.value || ''}</td><td>${inputs[6]?.value || 0}</td><td>${inputs[7]?.value || 0}</td><td>${inputs[8]?.value || 0}</td><td>${inputs[9]?.value || 0}%</td><td>${inputs[10]?.value || ''}</td></tr>`;
+                    });
+                    break;
+                case 'configuration':
+                    headers = '<tr><th>Key</th><th>Summary</th><th>Module</th><th>Assignee</th><th>Start</th><th>Due</th><th>Status</th><th>Progress</th><th>Notes</th></tr>';
+                    rows.forEach((row, i) => {
+                        const inputs = row.querySelectorAll('input, select');
+                        bodyRows += `<tr><td>${prefix}-${i+1}</td><td>${inputs[0]?.value || ''}</td><td>${inputs[1]?.value || ''}</td><td>${inputs[2]?.value || ''}</td><td>${inputs[3]?.value || ''}</td><td>${inputs[4]?.value || ''}</td><td>${inputs[5]?.value || ''}</td><td>${inputs[6]?.value || 0}%</td><td>${inputs[7]?.value || ''}</td></tr>`;
+                    });
+                    break;
+                case 'issues':
+                    headers = '<tr><th>Key</th><th>Type</th><th>Summary</th><th>Description</th><th>Stream</th><th>Priority</th><th>Impact</th><th>Assignee</th><th>Status</th><th>Mitigation</th><th>Due</th></tr>';
+                    rows.forEach((row, i) => {
+                        const inputs = row.querySelectorAll('input, select');
+                        bodyRows += `<tr><td>${prefix}-${i+1}</td><td>${inputs[0]?.value || ''}</td><td>${inputs[1]?.value || ''}</td><td>${inputs[2]?.value || ''}</td><td>${inputs[3]?.value || ''}</td><td>${inputs[4]?.value || ''}</td><td>${inputs[5]?.value || ''}</td><td>${inputs[6]?.value || ''}</td><td>${inputs[7]?.value || ''}</td><td>${inputs[8]?.value || ''}</td><td>${inputs[9]?.value || ''}</td></tr>`;
+                    });
+                    break;
+                case 'dependencies':
+                    headers = '<tr><th>Key</th><th>Summary</th><th>Type</th><th>From</th><th>To</th><th>Description</th><th>Assignee</th><th>Required By</th><th>Status</th><th>Impact</th></tr>';
+                    rows.forEach((row, i) => {
+                        const inputs = row.querySelectorAll('input, select');
+                        bodyRows += `<tr><td>${prefix}-${i+1}</td><td>${inputs[0]?.value || ''}</td><td>${inputs[1]?.value || ''}</td><td>${inputs[2]?.value || ''}</td><td>${inputs[3]?.value || ''}</td><td>${inputs[4]?.value || ''}</td><td>${inputs[5]?.value || ''}</td><td>${inputs[6]?.value || ''}</td><td>${inputs[7]?.value || ''}</td><td>${inputs[8]?.value || ''}</td></tr>`;
+                    });
+                    break;
+                case 'milestones':
+                    headers = '<tr><th>Key</th><th>Summary</th><th>Stream</th><th>Planned</th><th>Actual</th><th>Status</th><th>Assignee</th><th>Deliverables</th><th>Notes</th></tr>';
+                    rows.forEach((row, i) => {
+                        const inputs = row.querySelectorAll('input, select');
+                        bodyRows += `<tr><td>${prefix}-${i+1}</td><td>${inputs[0]?.value || ''}</td><td>${inputs[1]?.value || ''}</td><td>${inputs[2]?.value || ''}</td><td>${inputs[3]?.value || ''}</td><td>${inputs[4]?.value || ''}</td><td>${inputs[5]?.value || ''}</td><td>${inputs[6]?.value || ''}</td><td>${inputs[7]?.value || ''}</td></tr>`;
+                    });
+                    break;
+            }
+            
+            return `<table class="report-table"><thead>${headers}</thead><tbody>${bodyRows}</tbody></table>`;
+        }
+
+        // Report
+        function generateReport() {
+            const period = document.getElementById('reportingPeriod').value.trim();
+            if (!period) {
+                alert('Please enter the Sprint/Week (Calendar Week) before generating the report.');
+                document.getElementById('reportingPeriod').focus();
+                return;
+            }
+            
+            const data = collectData();
+            const stats = calcReportStats();
+
+            document.getElementById('reportBody').innerHTML = `
+                <div class="report-section">
+                    <h3 class="report-section-title">Executive Summary</h3>
+                    <div class="report-info-grid">
+                        <div class="report-info-item"><span class="report-info-label">Project</span><span class="report-info-value">${data.meta.projectName || 'Untitled'}</span></div>
+                        <div class="report-info-item"><span class="report-info-label">Report Date</span><span class="report-info-value">${data.meta.reportDate || 'N/A'}</span></div>
+                        <div class="report-info-item"><span class="report-info-label">Period</span><span class="report-info-value">${data.meta.period || 'N/A'}</span></div>
+                        <div class="report-info-item"><span class="report-info-label">Generated</span><span class="report-info-value">${new Date().toLocaleString()}</span></div>
+                    </div>
+                </div>
+
+                <div class="report-section">
+                    <h3 class="report-section-title">Progress Overview</h3>
+                    <div class="report-metrics">
+                        <div class="report-metric"><div class="report-metric-value">${stats.integration.progress}%</div><div class="report-metric-label">Integration</div></div>
+                        <div class="report-metric"><div class="report-metric-value">${stats.migration.progress}%</div><div class="report-metric-label">Migration</div></div>
+                        <div class="report-metric"><div class="report-metric-value">${stats.testing.progress}%</div><div class="report-metric-label">Testing</div></div>
+                        <div class="report-metric"><div class="report-metric-value">${stats.configuration.progress}%</div><div class="report-metric-label">Configuration</div></div>
+                        <div class="report-metric highlight"><div class="report-metric-value">${stats.overall}%</div><div class="report-metric-label">Overall</div></div>
+                    </div>
+                </div>
+
+                <div class="report-section">
+                    <h3 class="report-section-title">Integration Tasks (${document.querySelectorAll('#integration-tbody tr').length})</h3>
+                    ${generateTaskTable('integration')}
+                </div>
+
+                <div class="report-section">
+                    <h3 class="report-section-title">Data Migration Tasks (${document.querySelectorAll('#migration-tbody tr').length})</h3>
+                    ${generateTaskTable('migration')}
+                </div>
+
+                <div class="report-section">
+                    <h3 class="report-section-title">Testing Activities (${document.querySelectorAll('#testing-tbody tr').length})</h3>
+                    ${generateTaskTable('testing')}
+                </div>
+
+                <div class="report-section">
+                    <h3 class="report-section-title">Configuration Items (${document.querySelectorAll('#configuration-tbody tr').length})</h3>
+                    ${generateTaskTable('configuration')}
+                </div>
+
+                <div class="report-section">
+                    <h3 class="report-section-title">Issues & Risks (${document.querySelectorAll('#issues-tbody tr').length})</h3>
+                    ${generateTaskTable('issues')}
+                </div>
+
+                <div class="report-section">
+                    <h3 class="report-section-title">Dependencies (${document.querySelectorAll('#dependencies-tbody tr').length})</h3>
+                    ${generateTaskTable('dependencies')}
+                </div>
+
+                <div class="report-section">
+                    <h3 class="report-section-title">Milestones (${document.querySelectorAll('#milestones-tbody tr').length})</h3>
+                    ${generateTaskTable('milestones')}
+                </div>
+
+                <div class="report-section">
+                    <h3 class="report-section-title">Recommendations</h3>
+                    <div class="recommendation-list">${genRecs(stats)}</div>
+                </div>
+            `;
+            document.getElementById('reportModal').classList.add('active');
+        }
+
+        // Calculate stats directly from DOM for accurate report
+        function calcReportStats() {
+            const stats = {
+                integration: { total: 0, completed: 0, blocked: 0, progress: 0 },
+                migration: { total: 0, completed: 0, blocked: 0, progress: 0 },
+                testing: { total: 0, completed: 0, blocked: 0, progress: 0 },
+                configuration: { total: 0, completed: 0, blocked: 0, progress: 0 },
+                issues: { total: 0, issues: 0, risks: 0, critical: 0 },
+                deps: { total: 0, pending: 0 },
+                milestones: { total: 0, completed: 0, overdue: 0 },
+                overall: 0
+            };
+
+            // Integration: inputs[4]=status, inputs[5]=progress
+            const intRows = document.querySelectorAll('#integration-tbody tr');
+            stats.integration.total = intRows.length;
+            let intProg = 0;
+            intRows.forEach(row => {
+                const inputs = row.querySelectorAll('input, select');
+                const status = inputs[4]?.value || '';
+                const progress = parseInt(inputs[5]?.value) || 0;
+                intProg += progress;
+                if (status === 'Done') stats.integration.completed++;
+                if (status === 'Blocked') stats.integration.blocked++;
+            });
+            stats.integration.progress = intRows.length > 0 ? Math.round(intProg / intRows.length) : 0;
+
+            // Migration: inputs[6]=status, inputs[8]=progress
+            const migRows = document.querySelectorAll('#migration-tbody tr');
+            stats.migration.total = migRows.length;
+            let migProg = 0;
+            migRows.forEach(row => {
+                const inputs = row.querySelectorAll('input, select');
+                const status = inputs[5]?.value || '';
+                const progress = parseInt(inputs[7]?.value) || 0;
+                migProg += progress;
+                if (status === 'Done') stats.migration.completed++;
+                if (status === 'Blocked') stats.migration.blocked++;
+            });
+            stats.migration.progress = migRows.length > 0 ? Math.round(migProg / migRows.length) : 0;
+
+            // Testing: inputs[5]=status, inputs[9]=progress
+            const testRows = document.querySelectorAll('#testing-tbody tr');
+            stats.testing.total = testRows.length;
+            let testProg = 0;
+            testRows.forEach(row => {
+                const inputs = row.querySelectorAll('input, select');
+                const status = inputs[5]?.value || '';
+                const progress = parseInt(inputs[9]?.value) || 0;
+                testProg += progress;
+                if (status === 'Done') stats.testing.completed++;
+                if (status === 'Blocked') stats.testing.blocked++;
+            });
+            stats.testing.progress = testRows.length > 0 ? Math.round(testProg / testRows.length) : 0;
+
+            // Configuration: inputs[5]=status, inputs[6]=progress
+            const cfgRows = document.querySelectorAll('#configuration-tbody tr');
+            stats.configuration.total = cfgRows.length;
+            let cfgProg = 0;
+            cfgRows.forEach(row => {
+                const inputs = row.querySelectorAll('input, select');
+                const status = inputs[5]?.value || '';
+                const progress = parseInt(inputs[6]?.value) || 0;
+                cfgProg += progress;
+                if (status === 'Done') stats.configuration.completed++;
+                if (status === 'Blocked') stats.configuration.blocked++;
+            });
+            stats.configuration.progress = cfgRows.length > 0 ? Math.round(cfgProg / cfgRows.length) : 0;
+
+            // Overall progress
+            stats.overall = Math.round((stats.integration.progress + stats.migration.progress + stats.testing.progress + stats.configuration.progress) / 4);
+
+            // Issues: inputs[0]=type, inputs[4]=priority
+            const issueRows = document.querySelectorAll('#issues-tbody tr');
+            issueRows.forEach(row => {
+                const inputs = row.querySelectorAll('input, select');
+                stats.issues.total++;
+                const type = inputs[0]?.value || '';
+                const priority = inputs[4]?.value || '';
+                if (type === 'Issue') stats.issues.issues++;
+                if (type === 'Risk') stats.issues.risks++;
+                if (priority === 'Critical' || priority === 'High') stats.issues.critical++;
+            });
+
+            // Dependencies: inputs[7]=status
+            const depRows = document.querySelectorAll('#dependencies-tbody tr');
+            depRows.forEach(row => {
+                const inputs = row.querySelectorAll('input, select');
+                stats.deps.total++;
+                const status = inputs[7]?.value || '';
+                if (status !== 'Done') stats.deps.pending++;
+            });
+
+            // Milestones: inputs[2]=planned, inputs[4]=status
+            const today = new Date().toISOString().split('T')[0];
+            const msRows = document.querySelectorAll('#milestones-tbody tr');
+            msRows.forEach(row => {
+                const inputs = row.querySelectorAll('input, select');
+                stats.milestones.total++;
+                const planned = inputs[2]?.value || '';
+                const status = inputs[4]?.value || '';
+                if (status === 'Done') stats.milestones.completed++;
+                else if (planned && planned < today) stats.milestones.overdue++;
+            });
+
+            return stats;
+        }
+
+        function genRecs(stats) {
+            const recs = [];
+            ['integration', 'migration', 'testing', 'configuration'].forEach(s => {
+                if (stats[s].blocked > 0) recs.push({ type: 'danger', text: `${s.charAt(0).toUpperCase() + s.slice(1)} has ${stats[s].blocked} blocked item(s).` });
+            });
+            if (stats.issues.critical > 0) recs.push({ type: 'warning', text: `${stats.issues.critical} critical/high priority issue(s) need attention.` });
+            if (stats.deps.pending > 0) recs.push({ type: 'warning', text: `${stats.deps.pending} dependency(ies) pending.` });
+            if (stats.milestones.overdue > 0) recs.push({ type: 'danger', text: `${stats.milestones.overdue} milestone(s) overdue.` });
+            if (recs.length === 0) recs.push({ type: 'success', text: 'Project is on track.' });
+            return recs.map(r => `<div class="recommendation-item ${r.type}"><span class="recommendation-text">${r.text}</span></div>`).join('');
+        }
+
+        function closeModal() {
+            document.getElementById('reportModal').classList.remove('active');
+        }
+
+        function printReport() {
+            window.print();
+        }
+
+        function saveAsPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
+            const margin = 15;
+            let y = margin;
+            
+            const projectName = document.getElementById('projectName').value || 'Project';
+            const reportDate = document.getElementById('reportDate').value || new Date().toISOString().split('T')[0];
+            const period = document.getElementById('reportingPeriod').value || 'N/A';
+            const stats = calcReportStats();
+            
+            // Helper functions
+            function addPage() {
+                doc.addPage();
+                y = margin;
+                addFooter();
+            }
+            
+            function checkPageBreak(needed) {
+                if (y + needed > pageHeight - 20) {
+                    addPage();
+                    return true;
+                }
+                return false;
+            }
+            
+            function addFooter() {
+                doc.setFontSize(8);
+                doc.setTextColor(128);
+                doc.text(`Generated: ${new Date().toLocaleString()}`, margin, pageHeight - 10);
+                doc.text(`Page ${doc.internal.getNumberOfPages()}`, pageWidth - margin - 15, pageHeight - 10);
+            }
+            
+            // Title Page
+            doc.setFillColor(0, 82, 204);
+            doc.rect(0, 0, pageWidth, 60, 'F');
+            
+            doc.setTextColor(255);
+            doc.setFontSize(28);
+            doc.setFont('helvetica', 'bold');
+            doc.text('PROJECT STATUS REPORT', pageWidth / 2, 30, { align: 'center' });
+            
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'normal');
+            doc.text(projectName, pageWidth / 2, 45, { align: 'center' });
+            
+            y = 80;
+            doc.setTextColor(23, 43, 77);
+            
+            // Executive Summary Box
+            doc.setFillColor(244, 245, 247);
+            doc.roundedRect(margin, y, pageWidth - 2 * margin, 40, 3, 3, 'F');
+            
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Executive Summary', margin + 5, y + 8);
+            
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Report Date: ${reportDate}`, margin + 5, y + 18);
+            doc.text(`Reporting Period: ${period}`, margin + 5, y + 26);
+            doc.text(`Overall Progress: ${stats.overall}%`, margin + 5, y + 34);
+            
+            doc.text(`Total Tasks: ${stats.integration.total + stats.migration.total + stats.testing.total + stats.configuration.total}`, pageWidth / 2, y + 18);
+            doc.text(`Issues/Risks: ${stats.issues.total}`, pageWidth / 2, y + 26);
+            doc.text(`Milestones: ${stats.milestones.total}`, pageWidth / 2, y + 34);
+            
+            y += 55;
+            
+            // Progress Overview
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Progress Overview', margin, y);
+            y += 10;
+            
+            // Progress bars
+            const streams = [
+                { name: 'Integration', progress: stats.integration.progress, color: [0, 82, 204] },
+                { name: 'Data Migration', progress: stats.migration.progress, color: [101, 84, 192] },
+                { name: 'Testing', progress: stats.testing.progress, color: [54, 179, 126] },
+                { name: 'Configuration', progress: stats.configuration.progress, color: [255, 171, 0] }
+            ];
+            
+            streams.forEach(stream => {
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'normal');
+                doc.setTextColor(23, 43, 77);
+                doc.text(stream.name, margin, y + 4);
+                doc.text(`${stream.progress}%`, pageWidth - margin - 15, y + 4);
+                
+                // Background bar
+                doc.setFillColor(223, 225, 230);
+                doc.roundedRect(margin + 45, y, 100, 6, 2, 2, 'F');
+                
+                // Progress bar
+                if (stream.progress > 0) {
+                    doc.setFillColor(...stream.color);
+                    doc.roundedRect(margin + 45, y, stream.progress, 6, 2, 2, 'F');
+                }
+                
+                y += 12;
+            });
+            
+            y += 10;
+            addFooter();
+            
+            // Helper to get table data from DOM
+            function getTableData(type) {
+                const tbody = document.getElementById(`${type}-tbody`);
+                const rows = tbody.querySelectorAll('tr');
+                const data = [];
+                const prefix = { integration: 'INT', migration: 'MIG', testing: 'TST', configuration: 'CFG', issues: 'IR', dependencies: 'DEP', milestones: 'MS' }[type];
+                
+                rows.forEach((row, i) => {
+                    const inputs = row.querySelectorAll('input, select');
+                    const rowData = [`${prefix}-${i+1}`];
+                    inputs.forEach(input => rowData.push(input.value || ''));
+                    data.push(rowData);
+                });
+                return data;
+            }
+            
+            // Integration Tasks
+            checkPageBreak(40);
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(0, 82, 204);
+            doc.text(`Integration Tasks (${stats.integration.total})`, margin, y);
+            y += 8;
+            
+            const intData = getTableData('integration');
+            if (intData.length > 0) {
+                doc.autoTable({
+                    startY: y,
+                    head: [['Key', 'Summary', 'Assignee', 'Start', 'Due', 'Status', 'Progress', 'Notes']],
+                    body: intData.map(r => [r[0], r[1], r[2], r[3], r[4], r[5], r[6] + '%', r[7]]),
+                    margin: { left: margin, right: margin },
+                    styles: { fontSize: 8, cellPadding: 2 },
+                    headStyles: { fillColor: [0, 82, 204], textColor: 255 },
+                    alternateRowStyles: { fillColor: [244, 245, 247] },
+                    columnStyles: { 0: { cellWidth: 15 }, 1: { cellWidth: 40 } }
+                });
+                y = doc.lastAutoTable.finalY + 15;
+            } else {
+                doc.setFontSize(10);
+                doc.setTextColor(128);
+                doc.text('No tasks recorded.', margin, y + 5);
+                y += 15;
+            }
+            
+            // Data Migration Tasks
+            checkPageBreak(40);
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(101, 84, 192);
+            doc.text(`Data Migration Tasks (${stats.migration.total})`, margin, y);
+            y += 8;
+            
+            const migData = getTableData('migration');
+            if (migData.length > 0) {
+                doc.autoTable({
+                    startY: y,
+                    head: [['Key', 'Summary', 'Source', 'Assignee', 'Start', 'Due', 'Status', 'Records', 'Progress']],
+                    body: migData.map(r => [r[0], r[1], r[2], r[3], r[4], r[5], r[6], r[7], r[8] + '%']),
+                    margin: { left: margin, right: margin },
+                    styles: { fontSize: 8, cellPadding: 2 },
+                    headStyles: { fillColor: [101, 84, 192], textColor: 255 },
+                    alternateRowStyles: { fillColor: [244, 245, 247] }
+                });
+                y = doc.lastAutoTable.finalY + 15;
+            } else {
+                doc.setFontSize(10);
+                doc.setTextColor(128);
+                doc.text('No tasks recorded.', margin, y + 5);
+                y += 15;
+            }
+            
+            // Testing Tasks
+            checkPageBreak(40);
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(54, 179, 126);
+            doc.text(`Testing Activities (${stats.testing.total})`, margin, y);
+            y += 8;
+            
+            const testData = getTableData('testing');
+            if (testData.length > 0) {
+                doc.autoTable({
+                    startY: y,
+                    head: [['Key', 'Summary', 'Type', 'Assignee', 'Status', 'Total', 'Pass', 'Fail', 'Progress']],
+                    body: testData.map(r => [r[0], r[1], r[2], r[3], r[6], r[7], r[8], r[9], r[10] + '%']),
+                    margin: { left: margin, right: margin },
+                    styles: { fontSize: 8, cellPadding: 2 },
+                    headStyles: { fillColor: [54, 179, 126], textColor: 255 },
+                    alternateRowStyles: { fillColor: [244, 245, 247] }
+                });
+                y = doc.lastAutoTable.finalY + 15;
+            } else {
+                doc.setFontSize(10);
+                doc.setTextColor(128);
+                doc.text('No tasks recorded.', margin, y + 5);
+                y += 15;
+            }
+            
+            // Configuration Tasks
+            checkPageBreak(40);
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(255, 171, 0);
+            doc.text(`Configuration Items (${stats.configuration.total})`, margin, y);
+            y += 8;
+            
+            const cfgData = getTableData('configuration');
+            if (cfgData.length > 0) {
+                doc.autoTable({
+                    startY: y,
+                    head: [['Key', 'Summary', 'Module', 'Assignee', 'Start', 'Due', 'Status', 'Progress']],
+                    body: cfgData.map(r => [r[0], r[1], r[2], r[3], r[4], r[5], r[6], r[7] + '%']),
+                    margin: { left: margin, right: margin },
+                    styles: { fontSize: 8, cellPadding: 2 },
+                    headStyles: { fillColor: [255, 171, 0], textColor: 0 },
+                    alternateRowStyles: { fillColor: [244, 245, 247] }
+                });
+                y = doc.lastAutoTable.finalY + 15;
+            } else {
+                doc.setFontSize(10);
+                doc.setTextColor(128);
+                doc.text('No tasks recorded.', margin, y + 5);
+                y += 15;
+            }
+            
+            // Issues & Risks
+            checkPageBreak(40);
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(222, 53, 11);
+            doc.text(`Issues & Risks (${stats.issues.total})`, margin, y);
+            y += 8;
+            
+            const issueData = getTableData('issues');
+            if (issueData.length > 0) {
+                doc.autoTable({
+                    startY: y,
+                    head: [['Key', 'Type', 'Summary', 'Stream', 'Priority', 'Status', 'Mitigation']],
+                    body: issueData.map(r => [r[0], r[1], r[2], r[4], r[5], r[8], r[9]]),
+                    margin: { left: margin, right: margin },
+                    styles: { fontSize: 8, cellPadding: 2 },
+                    headStyles: { fillColor: [222, 53, 11], textColor: 255 },
+                    alternateRowStyles: { fillColor: [244, 245, 247] }
+                });
+                y = doc.lastAutoTable.finalY + 15;
+            } else {
+                doc.setFontSize(10);
+                doc.setTextColor(128);
+                doc.text('No issues or risks recorded.', margin, y + 5);
+                y += 15;
+            }
+            
+            // Dependencies
+            checkPageBreak(40);
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(0, 184, 217);
+            doc.text(`Dependencies (${stats.deps.total})`, margin, y);
+            y += 8;
+            
+            const depData = getTableData('dependencies');
+            if (depData.length > 0) {
+                doc.autoTable({
+                    startY: y,
+                    head: [['Key', 'Summary', 'Type', 'From', 'To', 'Required By', 'Status', 'Impact']],
+                    body: depData.map(r => [r[0], r[1], r[2], r[3], r[4], r[7], r[8], r[9]]),
+                    margin: { left: margin, right: margin },
+                    styles: { fontSize: 8, cellPadding: 2 },
+                    headStyles: { fillColor: [0, 184, 217], textColor: 255 },
+                    alternateRowStyles: { fillColor: [244, 245, 247] }
+                });
+                y = doc.lastAutoTable.finalY + 15;
+            } else {
+                doc.setFontSize(10);
+                doc.setTextColor(128);
+                doc.text('No dependencies recorded.', margin, y + 5);
+                y += 15;
+            }
+            
+            // Milestones
+            checkPageBreak(40);
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(23, 43, 77);
+            doc.text(`Milestones (${stats.milestones.total})`, margin, y);
+            y += 8;
+            
+            const msData = getTableData('milestones');
+            if (msData.length > 0) {
+                doc.autoTable({
+                    startY: y,
+                    head: [['Key', 'Summary', 'Stream', 'Planned', 'Actual', 'Status', 'Deliverables']],
+                    body: msData.map(r => [r[0], r[1], r[2], r[3], r[4], r[5], r[7]]),
+                    margin: { left: margin, right: margin },
+                    styles: { fontSize: 8, cellPadding: 2 },
+                    headStyles: { fillColor: [23, 43, 77], textColor: 255 },
+                    alternateRowStyles: { fillColor: [244, 245, 247] }
+                });
+                y = doc.lastAutoTable.finalY + 15;
+            } else {
+                doc.setFontSize(10);
+                doc.setTextColor(128);
+                doc.text('No milestones recorded.', margin, y + 5);
+                y += 15;
+            }
+            
+            // Recommendations
+            checkPageBreak(50);
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(23, 43, 77);
+            doc.text('Recommendations', margin, y);
+            y += 10;
+            
+            const recs = [];
+            ['integration', 'migration', 'testing', 'configuration'].forEach(s => {
+                if (stats[s].blocked > 0) recs.push({ type: 'danger', text: `${s.charAt(0).toUpperCase() + s.slice(1)} has ${stats[s].blocked} blocked item(s) requiring immediate attention.` });
+            });
+            if (stats.issues.critical > 0) recs.push({ type: 'warning', text: `${stats.issues.critical} critical/high priority issue(s) need immediate attention.` });
+            if (stats.deps.pending > 0) recs.push({ type: 'warning', text: `${stats.deps.pending} dependency(ies) are pending resolution.` });
+            if (stats.milestones.overdue > 0) recs.push({ type: 'danger', text: `${stats.milestones.overdue} milestone(s) are overdue.` });
+            if (recs.length === 0) recs.push({ type: 'success', text: 'Project is on track. Continue monitoring progress.' });
+            
+            recs.forEach(rec => {
+                const color = rec.type === 'danger' ? [222, 53, 11] : rec.type === 'warning' ? [255, 171, 0] : [54, 179, 126];
+                doc.setFillColor(...color);
+                doc.rect(margin, y - 3, 3, 10, 'F');
+                doc.setFontSize(10);
+                doc.setTextColor(23, 43, 77);
+                doc.text(rec.text, margin + 8, y + 3, { maxWidth: pageWidth - 2 * margin - 10 });
+                y += 15;
+            });
+            
+            // Update all page footers
+            const totalPages = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= totalPages; i++) {
+                doc.setPage(i);
+                doc.setFontSize(8);
+                doc.setTextColor(128);
+                doc.text(`Generated: ${new Date().toLocaleString()}`, margin, pageHeight - 10);
+                doc.text(`Page ${i} of ${totalPages}`, pageWidth - margin - 20, pageHeight - 10);
+            }
+            
+            // Save
+            doc.save(`${projectName.replace(/\s+/g, '_')}_Report_${reportDate}.pdf`);
+        }
+
+        document.getElementById('reportModal').addEventListener('click', e => {
+            if (e.target.id === 'reportModal') closeModal();
+        });
+
+        // Silent load (no alert)
+        function silentLoad() {
+            const saved = localStorage.getItem('projectData');
+            if (!saved) return false;
+            
+            const data = JSON.parse(saved);
+            
+            // Check if data has any rows at all
+            const hasContent = Object.values(data.streams).some(arr => arr.length > 0);
+            if (!hasContent) return false;
+            document.getElementById('projectName').value = data.meta.projectName || '';
+            document.getElementById('reportDate').value = data.meta.reportDate || '';
+            document.getElementById('reportingPeriod').value = data.meta.period || '';
+
+            Object.keys(data.streams).forEach(type => {
+                document.getElementById(type + '-tbody').innerHTML = '';
+                counters[type] = 1;
+                data.streams[type].forEach(rowData => {
+                    // Skip empty rows - check if f0 (first field) has content
+                    const hasData = Object.keys(rowData).some(key => key.startsWith('f') && rowData[key] && rowData[key].trim && rowData[key].trim() !== '');
+                    if (!hasData) return; // Skip this empty row
+                    
+                    addTask(type);
+                    const row = document.getElementById(type + '-tbody').lastElementChild;
+                    const inputs = row.querySelectorAll('input, select');
+                    Object.keys(rowData).forEach(key => {
+                        if (key.startsWith('f')) {
+                            const idx = parseInt(key.substring(1));
+                            if (inputs[idx]) inputs[idx].value = rowData[key];
+                        }
+                    });
+                });
+            });
+            refreshStats();
+            autoSave(); // Re-save without empty rows
+            return true;
+        }
+
+        // Synthetic data for demo
+        function loadSyntheticData() {
+            // Integration Tasks
+            const integrationData = [
+                { summary: 'SAP ERP Integration', assignee: 'John Smith', start: '2026-04-01', due: '2026-04-30', status: 'In Progress', progress: 65, notes: 'API endpoints configured' },
+                { summary: 'Salesforce CRM Connector', assignee: 'Sarah Johnson', start: '2026-04-05', due: '2026-05-15', status: 'In Progress', progress: 40, notes: 'OAuth setup complete' },
+                { summary: 'Payment Gateway Integration', assignee: 'Mike Chen', start: '2026-04-10', due: '2026-04-25', status: 'Done', progress: 100, notes: 'Stripe integration live' },
+                { summary: 'Email Service Provider', assignee: 'Emily Davis', start: '2026-04-15', due: '2026-05-01', status: 'To Do', progress: 0, notes: 'Pending vendor selection' },
+                { summary: 'Analytics Platform Hook', assignee: 'Alex Wilson', start: '2026-04-20', due: '2026-05-10', status: 'Blocked', progress: 25, notes: 'Waiting for API keys' }
+            ];
+
+            // Migration Tasks
+            const migrationData = [
+                { summary: 'Customer Database Migration', source: 'Legacy MySQL', assignee: 'David Brown', start: '2026-04-01', due: '2026-04-20', status: 'Done', records: 150000, progress: 100, notes: 'Completed successfully' },
+                { summary: 'Product Catalog Transfer', source: 'Oracle DB', assignee: 'Lisa Wang', start: '2026-04-05', due: '2026-04-25', status: 'In Progress', records: 45000, progress: 75, notes: 'Validation in progress' },
+                { summary: 'Order History Migration', source: 'SQL Server', assignee: 'Tom Anderson', start: '2026-04-10', due: '2026-05-05', status: 'In Progress', records: 500000, progress: 50, notes: 'Batch processing active' },
+                { summary: 'User Accounts Transfer', source: 'MongoDB', assignee: 'Rachel Green', start: '2026-04-15', due: '2026-04-30', status: 'To Do', records: 25000, progress: 0, notes: 'Schema mapping needed' }
+            ];
+
+            // Testing Tasks
+            const testingData = [
+                { summary: 'Unit Test Suite - Core', type: 'Unit', assignee: 'Kevin Lee', start: '2026-04-01', due: '2026-04-15', status: 'Done', total: 250, pass: 245, fail: 5, progress: 98, notes: '5 edge cases to fix' },
+                { summary: 'Integration Testing - APIs', type: 'Integration', assignee: 'Amy Zhang', start: '2026-04-10', due: '2026-04-30', status: 'In Progress', total: 120, pass: 85, fail: 10, progress: 71, notes: 'Auth tests pending' },
+                { summary: 'System Testing - E2E', type: 'System', assignee: 'Chris Martin', start: '2026-04-15', due: '2026-05-10', status: 'In Progress', total: 80, pass: 40, fail: 5, progress: 50, notes: 'Selenium scripts ready' },
+                { summary: 'UAT - Phase 1', type: 'UAT', assignee: 'Jennifer Lopez', start: '2026-04-20', due: '2026-05-15', status: 'To Do', total: 50, pass: 0, fail: 0, progress: 0, notes: 'User group identified' },
+                { summary: 'Performance Testing', type: 'Performance', assignee: 'Ryan Taylor', start: '2026-04-25', due: '2026-05-20', status: 'To Do', total: 30, pass: 0, fail: 0, progress: 0, notes: 'JMeter scripts prepared' }
+            ];
+
+            // Configuration Tasks
+            const configData = [
+                { summary: 'Production Environment Setup', module: 'Infrastructure', assignee: 'Mark Johnson', start: '2026-04-01', due: '2026-04-10', status: 'Done', progress: 100, notes: 'AWS configured' },
+                { summary: 'CI/CD Pipeline Configuration', module: 'DevOps', assignee: 'Steve Rogers', start: '2026-04-05', due: '2026-04-15', status: 'Done', progress: 100, notes: 'GitHub Actions setup' },
+                { summary: 'Security Settings', module: 'Security', assignee: 'Natasha Romanoff', start: '2026-04-10', due: '2026-04-25', status: 'In Progress', progress: 80, notes: 'SSL certificates pending' },
+                { summary: 'Monitoring & Alerts', module: 'Operations', assignee: 'Bruce Banner', start: '2026-04-15', due: '2026-05-01', status: 'In Progress', progress: 60, notes: 'Datadog integration' },
+                { summary: 'Backup & Recovery', module: 'Infrastructure', assignee: 'Tony Stark', start: '2026-04-20', due: '2026-05-05', status: 'To Do', progress: 0, notes: 'DR plan needed' }
+            ];
+
+            // Issues & Risks
+            const issuesData = [
+                { type: 'Issue', summary: 'API Rate Limiting', description: 'Third-party API hitting rate limits during peak hours', stream: 'Integration', priority: 'High', impact: 'High', assignee: 'John Smith', status: 'In Progress', mitigation: 'Implement caching layer', due: '2026-04-28' },
+                { type: 'Risk', summary: 'Data Loss During Migration', description: 'Potential data corruption during large batch transfers', stream: 'Data Migration', priority: 'Critical', impact: 'Critical', assignee: 'David Brown', status: 'To Do', mitigation: 'Implement rollback mechanism', due: '2026-04-25' },
+                { type: 'Issue', summary: 'Test Environment Instability', description: 'Frequent crashes in staging environment', stream: 'Testing', priority: 'Medium', impact: 'Medium', assignee: 'Kevin Lee', status: 'Done', mitigation: 'Increased server resources', due: '2026-04-20' },
+                { type: 'Risk', summary: 'Vendor Dependency', description: 'Single vendor for critical payment processing', stream: 'Integration', priority: 'High', impact: 'High', assignee: 'Mike Chen', status: 'To Do', mitigation: 'Evaluate backup vendors', due: '2026-05-10' }
+            ];
+
+            // Dependencies
+            const depsData = [
+                { summary: 'SAP API Documentation', type: 'External', from: 'Integration', to: 'Data Migration', description: 'Need API specs for data mapping', assignee: 'John Smith', requiredBy: '2026-04-15', status: 'Done', impact: 'High' },
+                { summary: 'Test Data Generation', type: 'Internal', from: 'Data Migration', to: 'Testing', description: 'Migrated data needed for test cases', assignee: 'Lisa Wang', requiredBy: '2026-04-25', status: 'In Progress', impact: 'High' },
+                { summary: 'Security Audit Completion', type: 'External', from: 'Configuration', to: 'All', description: 'Security clearance for production', assignee: 'Natasha Romanoff', requiredBy: '2026-05-01', status: 'To Do', impact: 'Critical' },
+                { summary: 'Infrastructure Provisioning', type: 'Technical', from: 'Configuration', to: 'Integration', description: 'Cloud resources for integration testing', assignee: 'Mark Johnson', requiredBy: '2026-04-10', status: 'Done', impact: 'Medium' }
+            ];
+
+            // Milestones
+            const milestonesData = [
+                { summary: 'Phase 1 - Core Integration Complete', stream: 'Integration', planned: '2026-04-30', actual: '', status: 'In Progress', assignee: 'John Smith', deliverables: 'SAP, Salesforce, Payment integrations', notes: 'On track' },
+                { summary: 'Data Migration - Wave 1', stream: 'Data Migration', planned: '2026-04-20', actual: '2026-04-18', status: 'Done', assignee: 'David Brown', deliverables: 'Customer and product data migrated', notes: 'Completed early' },
+                { summary: 'Testing Sign-off', stream: 'Testing', planned: '2026-05-15', actual: '', status: 'To Do', assignee: 'Kevin Lee', deliverables: 'All test suites passed', notes: 'Pending UAT' },
+                { summary: 'Go-Live Readiness', stream: 'All', planned: '2026-05-25', actual: '', status: 'To Do', assignee: 'Tony Stark', deliverables: 'Production deployment approved', notes: 'Final milestone' }
+            ];
+
+            // Populate Integration
+            integrationData.forEach(d => {
+                addTask('integration');
+                const row = document.getElementById('integration-tbody').lastElementChild;
+                const inputs = row.querySelectorAll('input, select');
+                inputs[0].value = d.summary;
+                inputs[1].value = d.assignee;
+                inputs[2].value = d.start;
+                inputs[3].value = d.due;
+                inputs[4].value = d.status;
+                inputs[5].value = d.progress;
+                inputs[6].value = d.notes;
+            });
+
+            // Populate Migration
+            migrationData.forEach(d => {
+                addTask('migration');
+                const row = document.getElementById('migration-tbody').lastElementChild;
+                const inputs = row.querySelectorAll('input, select');
+                inputs[0].value = d.summary;
+                inputs[1].value = d.source;
+                inputs[2].value = d.assignee;
+                inputs[3].value = d.start;
+                inputs[4].value = d.due;
+                inputs[5].value = d.status;
+                inputs[6].value = d.records;
+                inputs[7].value = d.progress;
+                inputs[8].value = d.notes;
+            });
+
+            // Populate Testing
+            testingData.forEach(d => {
+                addTask('testing');
+                const row = document.getElementById('testing-tbody').lastElementChild;
+                const inputs = row.querySelectorAll('input, select');
+                inputs[0].value = d.summary;
+                inputs[1].value = d.type;
+                inputs[2].value = d.assignee;
+                inputs[3].value = d.start;
+                inputs[4].value = d.due;
+                inputs[5].value = d.status;
+                inputs[6].value = d.total;
+                inputs[7].value = d.pass;
+                inputs[8].value = d.fail;
+                inputs[9].value = d.progress;
+                inputs[10].value = d.notes;
+            });
+
+            // Populate Configuration
+            configData.forEach(d => {
+                addTask('configuration');
+                const row = document.getElementById('configuration-tbody').lastElementChild;
+                const inputs = row.querySelectorAll('input, select');
+                inputs[0].value = d.summary;
+                inputs[1].value = d.module;
+                inputs[2].value = d.assignee;
+                inputs[3].value = d.start;
+                inputs[4].value = d.due;
+                inputs[5].value = d.status;
+                inputs[6].value = d.progress;
+                inputs[7].value = d.notes;
+            });
+
+            // Populate Issues
+            issuesData.forEach(d => {
+                addTask('issues');
+                const row = document.getElementById('issues-tbody').lastElementChild;
+                const inputs = row.querySelectorAll('input, select');
+                inputs[0].value = d.type;
+                inputs[1].value = d.summary;
+                inputs[2].value = d.description;
+                inputs[3].value = d.stream;
+                inputs[4].value = d.priority;
+                inputs[5].value = d.impact;
+                inputs[6].value = d.assignee;
+                inputs[7].value = d.status;
+                inputs[8].value = d.mitigation;
+                inputs[9].value = d.due;
+            });
+
+            // Populate Dependencies
+            depsData.forEach(d => {
+                addTask('dependencies');
+                const row = document.getElementById('dependencies-tbody').lastElementChild;
+                const inputs = row.querySelectorAll('input, select');
+                inputs[0].value = d.summary;
+                inputs[1].value = d.type;
+                inputs[2].value = d.from;
+                inputs[3].value = d.to;
+                inputs[4].value = d.description;
+                inputs[5].value = d.assignee;
+                inputs[6].value = d.requiredBy;
+                inputs[7].value = d.status;
+                inputs[8].value = d.impact;
+            });
+
+            // Populate Milestones
+            milestonesData.forEach(d => {
+                addTask('milestones');
+                const row = document.getElementById('milestones-tbody').lastElementChild;
+                const inputs = row.querySelectorAll('input, select');
+                inputs[0].value = d.summary;
+                inputs[1].value = d.stream;
+                inputs[2].value = d.planned;
+                inputs[3].value = d.actual;
+                inputs[4].value = d.status;
+                inputs[5].value = d.assignee;
+                inputs[6].value = d.deliverables;
+                inputs[7].value = d.notes;
+            });
+
+            // Update project info
+            document.getElementById('projectName').value = 'Enterprise Platform Migration';
+            document.getElementById('reportingPeriod').value = 'Sprint 8 (Apr 2026)';
+
+            refreshStats();
+            autoSave();
+        }
+
+        // Init
+        window.onload = () => {
+            // Check if there's saved data
+            const saved = localStorage.getItem('projectData');
+            
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    // Check if any stream has tasks
+                    const hasData = Object.values(data.streams).some(arr => arr.length > 0);
+                    if (hasData) {
+                        silentLoad();
+                    }
+                } catch(e) {
+                    // Invalid data, start fresh
+                }
+            }
+            // Start with empty project if no saved data
+            refreshStats();
+        };
+    </script>
+</body>
+</html>
